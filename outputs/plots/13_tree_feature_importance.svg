@@ -1,0 +1,71 @@
+<svg width="1000" height="650" viewBox="0 0 1000 650" xmlns="http://www.w3.org/2000/svg">
+<rect x="0" y="0" width="1000" height="650" opacity="1" fill="#FFFFFF" stroke="none"/>
+<text x="500" y="17" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="17.741935483870968" opacity="1" fill="#000000">
+Random Forest feature importance - mean relative impurity decrease per tree
+</text>
+<text x="620" y="638" dy="-0.5ex" text-anchor="middle" font-family="sans-serif" font-size="12.096774193548388" opacity="1" fill="#000000">
+Mean |weight| across the 5 classes
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="251,39 251,567 "/>
+<text x="242" y="567" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+attendance_percent
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,567 251,567 "/>
+<text x="242" y="479" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+sleep_hours
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,479 251,479 "/>
+<text x="242" y="391" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+internet_access_Yes
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,391 251,391 "/>
+<text x="242" y="303" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+extracurricular_activities_Yes
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,303 251,303 "/>
+<text x="242" y="215" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+parental_education_Bachelors
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,215 251,215 "/>
+<text x="242" y="127" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+parental_education_Masters
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,127 251,127 "/>
+<text x="242" y="39" dy="0.5ex" text-anchor="end" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="246,39 251,39 "/>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="252,568 987,568 "/>
+<text x="252" y="578" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+0.0
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="252,568 252,573 "/>
+<text x="426" y="578" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+0.05
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="426,568 426,573 "/>
+<text x="601" y="578" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+0.1
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="601,568 601,573 "/>
+<text x="776" y="578" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+0.15
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="776,568 776,573 "/>
+<text x="951" y="578" dy="0.76em" text-anchor="middle" font-family="sans-serif" font-size="11.290322580645162" opacity="1" fill="#000000">
+0.2
+</text>
+<polyline fill="none" opacity="1" stroke="#000000" stroke-width="1" points="951,568 951,573 "/>
+<rect x="252" y="530" width="680" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="486" width="601" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="442" width="528" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="398" width="443" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="354" width="246" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="310" width="229" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="266" width="182" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="222" width="145" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="178" width="144" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="134" width="134" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="90" width="107" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+<rect x="252" y="46" width="51" height="31" opacity="0.85" fill="#D65C28" stroke="none"/>
+</svg>

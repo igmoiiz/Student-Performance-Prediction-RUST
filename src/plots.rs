@@ -1,5 +1,6 @@
 use crate::data::Record;
 use crate::features::{self, Preprocessor};
+use crate::forest;
 use crate::metrics::{self, ClassMetrics};
 use ndarray::Array2;
 use plotters::coord::types::RangedCoordf64;
@@ -295,15 +296,24 @@ pub fn plot_confusion_matrix(
     cm: &Array2<usize>,
     path: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    plot_confusion_matrix_titled(
+        cm,
+        path,
+        "Confusion Matrix on the test set (rows = actual grade, columns = predicted grade)",
+    )
+}
+
+pub fn plot_confusion_matrix_titled(
+    cm: &Array2<usize>,
+    path: &str,
+    title: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let n = cm.nrows();
     let max_v = *cm.iter().max().unwrap() as f64;
     let root = drawing_area(path, PLOT_W, PLOT_H);
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
-        .caption(
-            "Confusion Matrix on the test set (rows = actual grade, columns = predicted grade)",
-            (TITLE_FONT, 24).into_font(),
-        )
+        .caption(title, (TITLE_FONT, 24).into_font())
         .margin(12)
         .x_label_area_size(70)
         .y_label_area_size(70)
@@ -431,6 +441,7 @@ pub fn plot_per_class_metrics(
 pub fn plot_feature_importance(
     names: &[String],
     weights: &[f64],
+    title: &str,
     path: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let n = names.len();
@@ -440,10 +451,7 @@ pub fn plot_feature_importance(
     let root = drawing_area(path, PLOT_W, PLOT_H);
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
-        .caption(
-            "Mean absolute logistic-regression weight per feature - what the model relies on",
-            (TITLE_FONT, 22).into_font(),
-        )
+        .caption(title, (TITLE_FONT, 22).into_font())
         .margin(12)
         .x_label_area_size(70)
         .y_label_area_size(240)
@@ -575,6 +583,7 @@ pub fn render_all(
     plot_feature_importance(
         &pre.feature_names,
         &importances,
+        "Mean absolute logistic-regression weight per feature - what the model relies on",
         "outputs/plots/08_feature_importance.svg",
     )?;
 
@@ -592,4 +601,146 @@ fn numeric_value(r: &Record, i: usize) -> f64 {
         2 => r.sleep_hours,
         _ => r.previous_grade,
     }
+}
+
+/// Summary row for one model, used by the comparison chart.
+pub struct ModelStats {
+    pub name: String,
+    pub accuracy: f64,
+    pub f1: Vec<f64>,
+}
+
+/// Plot 11: grouped bar chart comparing overall accuracy and per-class F1.
+pub fn plot_model_comparison(
+    models: &[ModelStats],
+    path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    const CATS: [&str; 6] = ["Accuracy", "F1-A", "F1-B", "F1-C", "F1-D", "F1-F"];
+    let n_cats = CATS.len();
+    let n_models = models.len();
+    let colors = [
+        RGBColor(66, 133, 244),
+        RGBColor(251, 188, 4),
+        RGBColor(52, 168, 83),
+        RGBColor(142, 36, 170),
+    ];
+
+    let root = drawing_area(path, PLOT_W, PLOT_H);
+    root.fill(&WHITE)?;
+    let mut chart = ChartBuilder::on(&root)
+        .caption(
+            "Model comparison on the test set - overall accuracy and F1 per grade",
+            (TITLE_FONT, 22).into_font(),
+        )
+        .margin(12)
+        .x_label_area_size(55)
+        .y_label_area_size(55)
+        .build_cartesian_2d(0f64..n_cats as f64, 0f64..1.05f64)?;
+    chart
+        .configure_mesh()
+        .disable_mesh()
+        .x_labels(n_cats)
+        .x_label_formatter(&|&x| {
+            let idx = x as usize;
+            if (0..n_cats).contains(&idx) {
+                CATS[idx].to_string()
+            } else {
+                String::new()
+            }
+        })
+        .y_label_formatter(&|&y| format!("{:.2}", y))
+        .x_desc("Metric")
+        .axis_desc_style((AXIS_FONT, 16).into_font())
+        .label_style((AXIS_FONT, 15).into_font())
+        .draw()?;
+
+    let bar_w = 0.16;
+    let group_w = 0.9;
+    let start = 0.05;
+    for (m, model) in models.iter().enumerate() {
+        let color = colors[m % colors.len()];
+        let mut series = Vec::new();
+        for (c, cat) in CATS.iter().enumerate() {
+            let value = if *cat == "Accuracy" {
+                model.accuracy
+            } else {
+                let grade = cat.trim_start_matches("F1-");
+                let idx = features::grade_to_ordinal(grade) as usize;
+                model.f1[idx]
+            };
+            let x0 = c as f64 + start + (group_w / n_models as f64) * m as f64;
+            series.push(Rectangle::new(
+                [(x0, 0.0), (x0 + bar_w, value)],
+                color.mix(0.85).filled(),
+            ));
+            if value > 0.02 {
+                draw_count_text(
+                    &chart,
+                    &root,
+                    (x0 + bar_w / 2.0, value + 0.02),
+                    &format!("{:.2}", value),
+                    (AXIS_FONT, 10).into_font().color(&BLACK),
+                )?;
+            }
+        }
+        chart
+            .draw_series(series)?
+            .label(model.name.clone())
+            .legend(move |(x, y)| Rectangle::new([(x, y - 5), (x + 10, y + 5)], color.filled()));
+    }
+    chart
+        .configure_series_labels()
+        .background_style(WHITE.mix(0.8))
+        .border_style(BLACK)
+        .label_font((AXIS_FONT, 15))
+        .draw()?;
+    root.present()?;
+    Ok(())
+}
+
+/// Render the tree-model plots under `outputs/plots/`.
+pub fn render_tree_all(
+    pre: &Preprocessor,
+    cm_dt: &Array2<usize>,
+    cm_rf: &Array2<usize>,
+    cm_ens: &Array2<usize>,
+    models: &[ModelStats],
+    forest: &forest::RandomForest,
+) -> Result<(), Box<dyn std::error::Error>> {
+    into_plot_dir()?;
+
+    // 9. Decision tree confusion matrix
+    plot_confusion_matrix_titled(
+        cm_dt,
+        "outputs/plots/09_confusion_matrix_decision_tree.svg",
+        "Decision Tree - confusion matrix on the test set (rows = actual, cols = predicted)",
+    )?;
+
+    // 10. Random forest confusion matrix
+    plot_confusion_matrix_titled(
+        cm_rf,
+        "outputs/plots/10_confusion_matrix_random_forest.svg",
+        "Random Forest - confusion matrix on the test set (rows = actual, cols = predicted)",
+    )?;
+
+    // 11. Ensemble confusion matrix
+    plot_confusion_matrix_titled(
+        cm_ens,
+        "outputs/plots/11_confusion_matrix_ensemble.svg",
+        "Ensemble (logistic + random forest) - confusion matrix on the test set",
+    )?;
+
+    // 12. Logistic vs decision tree vs random forest vs ensemble
+    plot_model_comparison(models, "outputs/plots/12_model_comparison.svg")?;
+
+    // 13. Forest feature importance (mean relative impurity decrease per tree)
+    let importance = forest.feature_importance(pre.feature_names.len());
+    plot_feature_importance(
+        &pre.feature_names,
+        &importance,
+        "Random Forest feature importance - mean relative impurity decrease per tree",
+        "outputs/plots/13_tree_feature_importance.svg",
+    )?;
+
+    Ok(())
 }

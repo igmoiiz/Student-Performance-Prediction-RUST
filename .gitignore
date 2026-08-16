@@ -1,2 +1,4 @@
 /target
 outputs/model.bin
+outputs/model_tree.bin
+
