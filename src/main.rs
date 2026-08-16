@@ -1,6 +1,7 @@
 mod data;
 mod features;
 mod metrics;
+mod plots;
 
 use features::Preprocessor;
 use linfa::prelude::*;
@@ -10,6 +11,7 @@ use ndarray::Array2;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 const DATASET_PATH: &str = "data/dataset.csv";
 const MODEL_PATH: &str = "outputs/model.bin";
@@ -18,8 +20,8 @@ const TEST_FRACTION: f64 = 0.2;
 const SEED: u64 = 42;
 const N_CLASSES: usize = 5;
 
-/// Serialized together so a later `predict` subcommand can re-apply the exact
-/// same preprocessing (scaling + one-hot encoding) as training.
+/// Serialized together so the `predict` subcommand can re-apply the exact same
+/// preprocessing (scaling + one-hot encoding) as training.
 #[derive(Serialize, Deserialize)]
 struct ModelBundle {
     model: MultiFittedLogisticRegression<f64, i32>,
@@ -154,9 +156,23 @@ fn run_train() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write(MODEL_PATH, bincode::serialize(&bundle)?)?;
     println!("Saved model bundle -> {MODEL_PATH}");
 
+    plots::render_all(&records, &pre, &cm, &model)?;
+    println!("Saved 8 labelled plots -> outputs/plots/");
+
     Ok(())
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    run_train()
+    let args: Vec<String> = std::env::args().collect();
+    match args.get(1).map(String::as_str) {
+        Some("train") => run_train(),
+        _ => {
+            println!("Student Performance Prediction (Rust + linfa)");
+            println!();
+            println!("Usage:");
+            println!("  cargo run -- train       Train the model, evaluate it and write all artifacts");
+            println!("  cargo test               Run unit tests");
+            Ok(())
+        }
+    }
 }
