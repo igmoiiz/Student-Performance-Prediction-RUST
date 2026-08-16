@@ -162,15 +162,44 @@ fn run_train() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn run_predict() -> Result<(), Box<dyn std::error::Error>> {
+    if !Path::new(MODEL_PATH).exists() {
+        eprintln!("Model not found at {MODEL_PATH}. Run `cargo run -- train` first.");
+        std::process::exit(1);
+    }
+    println!("Paste a student row as a single CSV line (12 fields, same column order as data/dataset.csv;");
+    println!("`final_grade` may be any value, it is ignored). Example:");
+    println!("  999,Female,4.6,85.3,8.1,High School,No,No,Yes,52.2,82.2,B");
+    let mut line = String::new();
+    std::io::stdin().read_line(&mut line)?;
+    let record = data::from_csv_line(&line)?;
+
+    let bytes = std::fs::read(MODEL_PATH)?;
+    let bundle: ModelBundle = bincode::deserialize(&bytes)?;
+
+    let row = bundle.preprocess.transform_record(&record);
+    let features = Array2::from_shape_vec((1, row.len()), row)?;
+    let pred = bundle.model.predict(&features);
+    println!();
+    println!(
+        "Student #{} -> predicted final grade: {}",
+        record.student_id,
+        features::ordinal_to_grade(pred[0])
+    );
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
     match args.get(1).map(String::as_str) {
         Some("train") => run_train(),
+        Some("predict") => run_predict(),
         _ => {
             println!("Student Performance Prediction (Rust + linfa)");
             println!();
             println!("Usage:");
             println!("  cargo run -- train       Train the model, evaluate it and write all artifacts");
+            println!("  cargo run -- predict     Load outputs/model.bin and predict a grade from a CSV line");
             println!("  cargo test               Run unit tests");
             Ok(())
         }
